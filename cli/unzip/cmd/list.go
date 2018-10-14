@@ -33,13 +33,12 @@ import (
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List all files in remote zip",
+	Use:     "list",
+	Short:   "List all files in remote zip",
+	Example: "  punzip list ZIP_URL",
+	Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) < 1 {
-			fmt.Println("give me a URL to read")
-			return
-		}
+
 		pzip, err := partialzip.New(args[0])
 		if err != nil {
 			log.Fatal(err)

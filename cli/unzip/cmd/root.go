@@ -34,8 +34,8 @@ var cfgFile string
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "punzip",
-	Short: "Partial unzip remote zip archives",
-	Long:  `Allows you to pull a single file from a very large zip file from a remote server.`,
+	Short: "Partially unzip remote zip archives",
+	// Long:  `Allows you to pull a single file out of a very large ZIP archive on a remote server.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	//	Run: func(cmd *cobra.Command, args []string) { },

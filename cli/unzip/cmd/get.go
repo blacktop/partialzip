@@ -22,22 +22,32 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 
+	"github.com/blacktop/partialzip"
 	"github.com/spf13/cobra"
 )
 
+var path string
+
 // getCmd represents the get command
 var getCmd = &cobra.Command{
-	Use:   "get",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Use:     "get",
+	Short:   "Download a file from the remote zip",
+	Example: "  punzip get --path PATH ZIP_URL",
+	Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("get called")
+
+		pzip, err := partialzip.New(args[0])
+		if err != nil {
+			log.Fatal(err)
+		}
+		_, err = pzip.Download(path)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Printf("Successfully downloaded %s\n", path)
 	},
 }
 
@@ -48,8 +58,8 @@ func init() {
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// getCmd.PersistentFlags().String("foo", "", "A help for foo")
-
+	getCmd.Flags().StringVarP(&path, "path", "p", "", "path inside zip to extract (required)")
+	getCmd.MarkFlagRequired("path")
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// getCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")

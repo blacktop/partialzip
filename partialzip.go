@@ -140,7 +140,7 @@ func (p *PartialZip) Get(path string) (io.ReadCloser, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("file %s does not exist in remote zip", path)
+	return nil, fmt.Errorf("path %s does not exist in remote zip", path)
 }
 
 // Download downloads a file from the remote zip.
@@ -182,8 +182,9 @@ func (p *PartialZip) Download(path string) (int, error) {
 			if err != nil {
 				return n, errors.Wrap(err, "failed to write decompressed data to file")
 			}
+			return n, nil
 		}
 	}
 
-	return n, nil
+	return n, fmt.Errorf("path %s does not exist in remote zip", path)
 }
