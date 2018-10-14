@@ -110,9 +110,42 @@ func (p *PartialZip) List() []string {
 	return filePaths
 }
 
-// Get downloads a file from the remote zip.
+// Get gets a handle to a file from the remote zip.
+// It returns an io.ReadCloser and an error, if any.
+func (p *PartialZip) Get(path string) (io.ReadCloser, error) {
+
+	var client http.Client
+	var padding uint64 = 1024
+
+	for _, file := range p.Files {
+		// find path in zip directory
+		if strings.EqualFold(file.Name, path) {
+			req, _ := http.NewRequest("GET", p.URL, nil)
+			end := uint64(file.headerOffset) + file.CompressedSize64 + padding
+			reqRange := fmt.Sprintf("bytes=%d-%d", file.headerOffset, end)
+			req.Header.Add("Range", reqRange)
+			resp, _ := client.Do(req)
+
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to read http response body")
+			}
+
+			dataOffset, err := findBodyOffset(bytes.NewReader(body))
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to find data start offset in zip file header")
+			}
+
+			return flate.NewReader(bytes.NewReader(body[dataOffset : uint64(len(body))-padding+dataOffset])), nil
+		}
+	}
+
+	return nil, fmt.Errorf("file %s does not exist in remote zip", path)
+}
+
+// Download downloads a file from the remote zip.
 // It returns the number of bytes written and an error, if any.
-func (p *PartialZip) Get(path string) (int, error) {
+func (p *PartialZip) Download(path string) (int, error) {
 
 	var client http.Client
 	var padding uint64 = 1024
