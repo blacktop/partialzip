@@ -26,8 +26,8 @@ SupportedProductTypes:
 
 ## Credits
 
-- [planetbeing/partial-zip](https://github.com/planetbeing/partial-zip) _written in C_
-- [marcograss/partialzip](https://github.com/marcograss/partialzip) _written in Rust_
+- [planetbeing/partial-zip](https://github.com/planetbeing/partial-zip) _(written in C)_
+- [marcograss/partialzip](https://github.com/marcograss/partialzip) _(written in Rust)_
 
 ## License
 
