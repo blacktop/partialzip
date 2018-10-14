@@ -28,13 +28,13 @@ func main() {
     }
     fmt.Println(pzip.List())
 
-    n, err := pzip.Get("kernelcache.release.iphone11")
+    n, err := pzip.Download("kernelcache.release.iphone11")
     if err != nil {
         log.Fatal(err)
     }
     fmt.Printf("extracting %s, wrote %d bytes\n", "kernelcache.release.iphone11", n)
 
-    n, err = pzip.Get("BuildManifest.plist")
+    n, err = pzip.Download("BuildManifest.plist")
     if err != nil {
         log.Fatal(err)
     }
