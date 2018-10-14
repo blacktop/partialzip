@@ -22,7 +22,7 @@ import (
 )
 
 func main() {
-    pzip, err := partialzip.New("http://long.ipsw.download.link")
+    pzip, err := partialzip.New("https://apple.com/ipsw/download/link")
     if err != nil {
         log.Fatal(err)
     }
