@@ -26,6 +26,9 @@ SupportedProductTypes:
 
 ## Credits
 
+- [planetbeing/partial-zip](https://github.com/planetbeing/partial-zip)
+- [marcograss/partialzip](https://github.com/marcograss/partialzip)
+
 ## License
 
 MIT Copyright (c) 2018 blacktop

@@ -26,6 +26,13 @@ type PartialFile struct {
 	Range FileRange
 }
 
+func getZipSize(url string) int64 {
+	var client http.Client
+	req, _ := http.NewRequest("HEAD", url, nil)
+	resp, _ := client.Do(req)
+	return resp.ContentLength
+}
+
 // New returns a newly created partialzip object.
 func New() *PartialZip {
 	pz := &PartialZip{}
