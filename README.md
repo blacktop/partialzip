@@ -6,7 +6,15 @@
 
 ---
 
-## Example
+## Install
+
+```bash
+go get github.com/fatih/color
+```
+
+> **NOTE:** the vendor folder is here for stability. Remove the folder if you already have the dependencies in your GOPATH.
+
+## Examples
 
 ```bash
 Extracting kernelcache.release.iphone11, wrote 17842148 bytes
@@ -17,6 +25,8 @@ ProductBuildVersion:  16A405
 SupportedProductTypes:
  -  iPhone11,2
 ```
+
+## Credits
 
 ## License
 
