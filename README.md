@@ -14,14 +14,37 @@ go get github.com/blacktop/partialzip
 
 ## Examples
 
+```golang
+import (
+    "fmt"
+
+    "github.com/blacktop/partialzip"
+)
+
+func main() {
+    pzip, err := partialzip.New("http://long.ipsw.download.link")
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Println(pzip.List())
+
+    n, err := pzip.Get("kernelcache.release.iphone11")
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("extracting %s, wrote %d bytes\n", "kernelcache.release.iphone11", n)
+
+    n, err = pzip.Get("BuildManifest.plist")
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("extracting %s, wrote %d bytes\n", "BuildManifest.plist", n)
+}
+```
+
 ```bash
-Extracting kernelcache.release.iphone11, wrote 17842148 bytes
-Extracting BuildManifest.plist, wrote 206068 bytes
-===> PARSING BuildManifest.plist
-ProductVersion:  12.0.1
-ProductBuildVersion:  16A405
-SupportedProductTypes:
- -  iPhone11,2
+extracting "kernelcache.release.iphone11", wrote 17842148 bytes
+extracting "BuildManifest.plist", wrote 206068 bytes
 ```
 
 ## Credits
