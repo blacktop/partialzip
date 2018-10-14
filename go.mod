@@ -10,5 +10,4 @@ require (
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/viper v1.2.1
 	github.com/stretchr/testify v1.2.2 // indirect
-	howett.net/plist v0.0.0-20180609054337-500bd5b9081b
 )
