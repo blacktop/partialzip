@@ -1,7 +1,6 @@
 package main
 
 import (
-	"archive/zip"
 	"bufio"
 	"bytes"
 	"compress/flate"
@@ -40,7 +39,7 @@ func parseBuildManifest() {
 	fmt.Println(data)
 }
 
-func parseRemoteZip() {
+func parseRemoteZip(name string) {
 
 	var client http.Client
 	var ipswSize int64
@@ -108,7 +107,7 @@ func parseRemoteZip() {
 	}
 
 	for _, file := range files {
-		if strings.EqualFold(file.Name, "kernelcache.release.iphone11") {
+		if strings.EqualFold(file.Name, name) {
 			fmt.Println(file.headerOffset)
 			// get ipsw's directory end bytes
 			req, _ = http.NewRequest("GET", url, nil)
@@ -134,8 +133,8 @@ func parseRemoteZip() {
 			if err != nil {
 				panic(err)
 			}
-			// fmt.Println("Enflated:\n", enflated)
-			of, err := os.Create("kernelcache.release.iphone11")
+
+			of, err := os.Create(name)
 			defer of.Close()
 			n, err := of.Write(enflated)
 			if err != nil {
@@ -148,117 +147,9 @@ func parseRemoteZip() {
 	// return nil
 }
 
-// kernelcache.release.iphone11
-// example/BuildManifest.plist
-func getBuildManifest(start, end uint64) error {
-	req, _ := http.NewRequest("GET", url, nil)
-	bRange := fmt.Sprintf("bytes=%d-%d", start, start+end)
-	fmt.Println("bRange: ", bRange)
-	req.Header.Add("Range", bRange)
-	fmt.Println(req)
-	var client http.Client
-	resp, _ := client.Do(req)
-	fmt.Println(resp)
-	body, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println(len(body))
-
-	enflated, err := ioutil.ReadAll(flate.NewReader(bytes.NewReader(body)))
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("Enflated:\n", enflated)
-	of, err := os.Create("BuildManifest.plist")
-	defer of.Close()
-	n, err := of.Write(enflated)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("wrote %d bytes\n", n)
-	return nil
-}
-
-// 773 827 2024
 func main() {
-	// Open a zip archive for reading.
-	r, err := zip.OpenReader("../iPhone11,2_12.0.1_16A405_Restore.ipsw")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer r.Close()
-
-	// Iterate through the files in the archive,
-	// printing some of their contents.
-	for _, f := range r.File {
-		if !f.FileInfo().IsDir() {
-			fmt.Printf("Contents of %s:\n", f.Name)
-
-			off, err := f.DataOffset()
-			if err != nil {
-				log.Fatal(err)
-			}
-			fmt.Printf("Offset: %d\n", off)
-			// rc, err := f.Open()
-			// if err != nil {
-			// 	log.Fatal(err)
-			// }
-			// _, err = io.CopyN(os.Stdout, rc, 68)
-			// if err != nil {
-			// 	log.Fatal(err)
-			// }
-			// rc.Close()
-			// fmt.Println()
-			parseRemoteZip()
-			return
-			getBuildManifest(uint64(off), f.CompressedSize64)
-			return
-			// ipsw, err := os.Open("../iPhone11,2_12.0.1_16A405_Restore.ipsw")
-			// defer ipsw.Close()
-			// o, err := ipsw.Seek(off, 0)
-			// if err != nil {
-			// 	log.Fatal(err)
-			// }
-			// buf := make([]byte, f.CompressedSize64)
-			// n2, err := ipsw.Read(buf)
-			// if err != nil {
-			// 	log.Fatal(err)
-			// }
-			// fmt.Printf("%d bytes @ %d: 0x%x\n", n2, o, buf)
-
-			// enflated, err := ioutil.ReadAll(flate.NewReader(bytes.NewReader(buf)))
-			// if err != nil {
-			// 	panic(err)
-			// }
-			// fmt.Println("Enflated:\n", enflated)
-			// of, err := os.Create(f.Name)
-			// defer of.Close()
-			// n2, err = of.Write(enflated)
-			// if err != nil {
-			// 	log.Fatal(err)
-			// }
-			// fmt.Printf("wrote %d bytes\n", n2)
-
-			// buf := []byte{}
-			// Create a new zip archive.
-			// nr, err := zip.NewReader(bytes.NewReader(buf), int64(f.CompressedSize64))
-			// if err != nil {
-			// 	fmt.Println(err)
-			// }
-			// // Register a custom Deflate compressor.
-			// nr.RegisterDecompressor(zip.Deflate, func(in io.Reader) io.ReadCloser {
-			// 	return flate.NewReader(in)
-			// })
-			// for _, nf := range nr.File {
-			// 	rc, err := nf.Open()
-			// 	if err != nil {
-			// 		log.Fatal(err)
-			// 	}
-			// 	_, err = io.CopyN(os.Stdout, rc, 68)
-			// 	if err != nil {
-			// 		log.Fatal(err)
-			// 	}
-			// 	rc.Close()
-			// 	fmt.Println()
-			// }
-		}
-	}
+	parseRemoteZip("kernelcache.release.iphone11")
+	parseRemoteZip("BuildManifest.plist")
+	parseBuildManifest()
+	return
 }
