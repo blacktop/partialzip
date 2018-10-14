@@ -81,7 +81,7 @@ func (p *PartialZip) init() error {
 	for {
 		f := &File{zipr: r, zipsize: p.Size}
 		err = readDirectoryHeader(f, buf)
-		if err == ErrFormat || err == io.ErrUnexpectedEOF {
+		if err == errFormat || err == io.ErrUnexpectedEOF {
 			break
 		}
 		if err != nil {
