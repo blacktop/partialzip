@@ -1,3 +1,5 @@
+# github.com/dustin/go-humanize v1.0.0
+github.com/dustin/go-humanize
 # github.com/fsnotify/fsnotify v1.4.7
 github.com/fsnotify/fsnotify
 # github.com/hashicorp/hcl v1.0.0

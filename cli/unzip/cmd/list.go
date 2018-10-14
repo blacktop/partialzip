@@ -22,22 +22,38 @@ package cmd
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"text/tabwriter"
 
+	"github.com/blacktop/partialzip"
+	humanize "github.com/dustin/go-humanize"
 	"github.com/spf13/cobra"
 )
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "List all files in remote zip",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("list called")
+		if len(args) < 1 {
+			fmt.Println("give me a URL to read")
+			return
+		}
+		pzip, err := partialzip.New(args[0])
+		if err != nil {
+			log.Fatal(err)
+		}
+		const padding = 3
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, padding, ' ', tabwriter.Debug)
+		fmt.Fprintln(w, "NAME\tSIZE")
+		// fmt.Fprintln(w, "====================================================================")
+		for _, file := range pzip.Files {
+			line := fmt.Sprintf("%s\t%s", file.Name, humanize.Bytes(file.UncompressedSize64))
+			fmt.Fprintln(w, line)
+			// fmt.Printf("%s\t%d\n", file.Name, file.UncompressedSize64)
+		}
+		w.Flush()
 	},
 }
 
