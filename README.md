@@ -1,5 +1,7 @@
 # partialzip
 
+[![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org) [![GoDoc](https://godoc.org/github.com/blacktop/partialzip?status.svg)](https://godoc.org/github.com/blacktop/partialzip)
+
 > Partial Implementation of PartialZip in Go
 
 ---
