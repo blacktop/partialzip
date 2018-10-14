@@ -36,7 +36,15 @@ func parseBuildManifest() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(data)
+	fmt.Println("===> PARSING BuildManifest.plist")
+	// fmt.Println("BuildIdentities: ", data.BuildIdentities)
+	// fmt.Println("ManifestVersion: ", data.ManifestVersion)
+	fmt.Println("ProductVersion: ", data.ProductVersion)
+	fmt.Println("ProductBuildVersion: ", data.ProductBuildVersion)
+	fmt.Println("SupportedProductTypes: ")
+	for _, prodType := range data.SupportedProductTypes {
+		fmt.Println(" - ", prodType)
+	}
 }
 
 func parseRemoteZip(name string) {
@@ -55,7 +63,7 @@ func parseRemoteZip(name string) {
 	// get ipsw's directory end bytes
 	req, _ = http.NewRequest("GET", url, nil)
 	reqRange := fmt.Sprintf("bytes=%d-%d", ipswSize-dEndChunk, ipswSize)
-	fmt.Println("reqRange: ", reqRange)
+	// fmt.Println("reqRange: ", reqRange)
 	req.Header.Add("Range", reqRange)
 	resp, _ = client.Do(req)
 
@@ -72,14 +80,14 @@ func parseRemoteZip(name string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(end)
+	// fmt.Println(end)
 	// z.r = r
 	files := make([]*File, 0, end.directoryRecords)
 	// z.Comment = end.comment
 	rs := io.NewSectionReader(readerAt, 0, dEndChunk)
 	// 3642197889-1024
 	offset := int64(dEndChunk - (ipswSize - int64(end.directoryOffset)))
-	fmt.Println(offset)
+	// fmt.Println(offset)
 	if _, err = rs.Seek(offset, io.SeekStart); err != nil {
 		log.Fatal(err)
 	}
@@ -108,7 +116,7 @@ func parseRemoteZip(name string) {
 
 	for _, file := range files {
 		if strings.EqualFold(file.Name, name) {
-			fmt.Println(file.headerOffset)
+			// fmt.Println(file.headerOffset)
 			// get ipsw's directory end bytes
 			req, _ = http.NewRequest("GET", url, nil)
 			// off, err := file.DataOffset()
@@ -117,12 +125,12 @@ func parseRemoteZip(name string) {
 			// }
 			end := uint64(file.headerOffset) + file.CompressedSize64 + padding
 			reqRange := fmt.Sprintf("bytes=%d-%d", file.headerOffset, end)
-			fmt.Println("reqRange: ", reqRange)
+			// fmt.Println("reqRange: ", reqRange)
 			req.Header.Add("Range", reqRange)
 			resp, _ = client.Do(req)
 
 			body, _ = ioutil.ReadAll(resp.Body)
-			fmt.Println(len(body))
+			// fmt.Println(len(body))
 
 			dataOffset, err := findBodyOffset(bytes.NewReader(body))
 			if err != nil {
@@ -140,8 +148,7 @@ func parseRemoteZip(name string) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			fmt.Printf("wrote %d bytes\n", n)
-
+			fmt.Printf("Extracting %s, wrote %d bytes\n", name, n)
 		}
 	}
 	// return nil
