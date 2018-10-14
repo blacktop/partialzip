@@ -1,6 +1,6 @@
 # partialzip
 
-[![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org) [![GoDoc](https://godoc.org/github.com/blacktop/partialzip?status.svg)](https://godoc.org/github.com/blacktop/partialzip)
+[![GoDoc](https://godoc.org/github.com/blacktop/partialzip?status.svg)](https://godoc.org/github.com/blacktop/partialzip) [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
 
 > Partial Implementation of PartialZip in Go
 
@@ -11,8 +11,6 @@
 ```bash
 go get github.com/fatih/color
 ```
-
-> **NOTE:** the vendor folder is here for stability. Remove the folder if you already have the dependencies in your GOPATH.
 
 ## Examples
 
