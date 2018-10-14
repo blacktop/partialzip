@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -20,6 +19,19 @@ type PartialZip struct {
 	URL   string
 	Size  int64
 	Files []*File
+}
+
+// New returns a newly created partialzip object.
+func New(url string) (*PartialZip, error) {
+
+	pz := &PartialZip{URL: url}
+
+	err := pz.init()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to read http response body")
+	}
+
+	return pz, nil
 }
 
 func (p *PartialZip) init() error {
@@ -48,18 +60,17 @@ func (p *PartialZip) init() error {
 	// parse zip's directory end
 	end, err := readDirectoryEnd(r, chuck)
 	if err != nil {
-		log.Fatal(err)
+		return errors.Wrap(err, "failed to read directory end from remote zip")
 	}
-	// fmt.Println(end)
+
 	// z.r = r
 	p.Files = make([]*File, 0, end.directoryRecords)
 	// z.Comment = end.comment
 	rs := io.NewSectionReader(r, 0, chuck)
-	// 3642197889-1024
+
 	offset := int64(chuck - (p.Size - int64(end.directoryOffset)))
-	// fmt.Println(offset)
 	if _, err = rs.Seek(offset, io.SeekStart); err != nil {
-		log.Fatal(err)
+		return errors.Wrap(err, "failed to seek to begining of directory")
 	}
 	buf := bufio.NewReader(rs)
 
@@ -74,30 +85,17 @@ func (p *PartialZip) init() error {
 			break
 		}
 		if err != nil {
-			log.Fatal(err)
+			return errors.Wrap(err, "failed to read directory header")
 		}
 		p.Files = append(p.Files, f)
 	}
 	if uint16(len(p.Files)) != uint16(end.directoryRecords) { // only compare 16 bits here
 		// Return the readDirectoryHeader error if we read
 		// the wrong number of directory entries.
-		log.Fatal(err)
+		return errors.Wrap(err, "failed to parse all files listed in directory end")
 	}
 
 	return nil
-}
-
-// New returns a newly created partialzip object.
-func New(url string) (*PartialZip, error) {
-
-	pz := &PartialZip{URL: url}
-
-	err := pz.init()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to read http response body")
-	}
-
-	return pz, nil
 }
 
 // List lists the files in the remote zip
@@ -111,49 +109,47 @@ func (p *PartialZip) List() []string {
 	return filePaths
 }
 
-// Get downloads a file from the re mote zip
-func (p *PartialZip) Get(path string) error {
+// Get downloads a file from the remote zip
+// It returns the number of bytes written and an error, if any.
+func (p *PartialZip) Get(path string) (int, error) {
 
 	var client http.Client
 	var padding uint64 = 1024
+	var n int
 
 	for _, file := range p.Files {
+		// find path in zip directory
 		if strings.EqualFold(file.Name, path) {
-			// fmt.Println(file.headerOffset)
-			// get ipsw's directory end bytes
 			req, _ := http.NewRequest("GET", p.URL, nil)
-			// off, err := file.DataOffset()
-			// if err != nil {
-			// 	log.Fatal(err)
-			// }
 			end := uint64(file.headerOffset) + file.CompressedSize64 + padding
 			reqRange := fmt.Sprintf("bytes=%d-%d", file.headerOffset, end)
-			// fmt.Println("reqRange: ", reqRange)
 			req.Header.Add("Range", reqRange)
 			resp, _ := client.Do(req)
 
-			body, _ := ioutil.ReadAll(resp.Body)
-			// fmt.Println(len(body))
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return n, errors.Wrap(err, "failed to read http response body")
+			}
 
 			dataOffset, err := findBodyOffset(bytes.NewReader(body))
 			if err != nil {
-				log.Fatal(err)
+				return n, errors.Wrap(err, "failed to find data start offset in zip file header")
 			}
 
 			enflated, err := ioutil.ReadAll(flate.NewReader(bytes.NewReader(body[dataOffset : uint64(len(body))-padding+dataOffset])))
 			if err != nil {
-				panic(err)
+				return n, errors.Wrap(err, "failed to flate decompress data")
 			}
 
 			of, err := os.Create(path)
 			defer of.Close()
-			n, err := of.Write(enflated)
+
+			n, err = of.Write(enflated)
 			if err != nil {
-				log.Fatal(err)
+				return n, errors.Wrap(err, "failed to write decompressed data to file")
 			}
-			fmt.Printf("Extracting %s, wrote %d bytes\n", path, n)
 		}
 	}
 
-	return nil
+	return n, nil
 }

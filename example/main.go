@@ -50,7 +50,17 @@ func main() {
 	}
 	fmt.Println(pzip.List())
 
-	pzip.Get("kernelcache.release.iphone11")
-	pzip.Get("BuildManifest.plist")
+	n, err := pzip.Get("kernelcache.release.iphone11")
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("Extracting %s, wrote %d bytes\n", "kernelcache.release.iphone11", n)
+
+	n, err = pzip.Get("BuildManifest.plist")
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("Extracting %s, wrote %d bytes\n", "BuildManifest.plist", n)
+
 	parseBuildManifest()
 }
