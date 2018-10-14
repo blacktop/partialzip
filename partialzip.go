@@ -98,7 +98,8 @@ func (p *PartialZip) init() error {
 	return nil
 }
 
-// List lists the files in the remote zip
+// List lists the files in the remote zip.
+// It returns a string array of file paths.
 func (p *PartialZip) List() []string {
 	filePaths := []string{}
 
@@ -109,7 +110,7 @@ func (p *PartialZip) List() []string {
 	return filePaths
 }
 
-// Get downloads a file from the remote zip
+// Get downloads a file from the remote zip.
 // It returns the number of bytes written and an error, if any.
 func (p *PartialZip) Get(path string) (int, error) {
 
