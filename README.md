@@ -33,18 +33,11 @@ func main() {
         log.Fatal(err)
     }
     fmt.Printf("extracting %s, wrote %d bytes\n", "kernelcache.release.iphone11", n)
-
-    n, err = pzip.Download("BuildManifest.plist")
-    if err != nil {
-        log.Fatal(err)
-    }
-    fmt.Printf("extracting %s, wrote %d bytes\n", "BuildManifest.plist", n)
 }
 ```
 
 ```bash
 extracting "kernelcache.release.iphone11", wrote 17842148 bytes
-extracting "BuildManifest.plist", wrote 206068 bytes
 ```
 
 ## CLI
