@@ -6,6 +6,10 @@
 
 ---
 
+## Why?
+
+If you need to download a VERY large zip, but you only need some small file from it, this is a nice optimization to allow you to only extract what you need and nothing else. Saving time, bandwidth and space.
+
 ## Install
 
 ```bash
@@ -17,6 +21,7 @@ go get github.com/blacktop/partialzip
 ```golang
 import (
     "fmt"
+    "log"
 
     "github.com/blacktop/partialzip"
 )
@@ -26,13 +31,14 @@ func main() {
     if err != nil {
         log.Fatal(err)
     }
+
     fmt.Println(pzip.List())
 
     n, err := pzip.Download("kernelcache.release.iphone11")
     if err != nil {
         log.Fatal(err)
     }
-    fmt.Printf("extracting %s, wrote %d bytes\n", "kernelcache.release.iphone11", n)
+    fmt.Printf("extracting kernelcache.release.iphone11, wrote %d bytes\n", n)
 }
 ```
 
@@ -44,7 +50,7 @@ extracting "kernelcache.release.iphone11", wrote 17842148 bytes
 
 ### Install
 
-Download from **punzip** from [releases](https://github.com/blacktop/partialzip/releases)
+Download **punzip** from [releases](https://github.com/blacktop/partialzip/releases)
 
 ### Usage
 
