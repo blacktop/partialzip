@@ -36,39 +36,53 @@ func New(url string) (*PartialZip, error) {
 
 func (p *PartialZip) init() error {
 	var client http.Client
-	var chuck int64 = 10 * 1024
+	var chuck int64 = 1024
+	var offset int64 = -1
+	var err error
+	var end *directoryEnd
+	var r *bytes.Reader
 
 	// get remote zip size
 	req, _ := http.NewRequest("HEAD", p.URL, nil)
 	resp, _ := client.Do(req)
 	p.Size = resp.ContentLength
 
-	// pull chuck from end of remote zip
-	reqRange := fmt.Sprintf("bytes=%d-%d", p.Size-chuck, p.Size)
-	req, _ = http.NewRequest("GET", p.URL, nil)
-	req.Header.Add("Range", reqRange)
-	resp, _ = client.Do(req)
+	for offset < 0 && chuck < (100 * 1024) {
+		//increase until we have enough to hold in the offset
+		chuck = 10 * chuck
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return errors.Wrap(err, "failed to read http response body")
+		// pull chuck from end of remote zip
+		reqRange := fmt.Sprintf("bytes=%d-%d", p.Size-chuck, p.Size)
+		req, _ = http.NewRequest("GET", p.URL, nil)
+		req.Header.Add("Range", reqRange)
+		resp, _ = client.Do(req)
+
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return errors.Wrap(err, "failed to read http response body")
+		}
+		defer resp.Body.Close()
+
+		r = bytes.NewReader(body)
+
+		// parse zip's directory end
+		end, err = readDirectoryEnd(r, chuck)
+		if err != nil {
+			return errors.Wrap(err, "failed to read directory end from remote zip")
+		}
+
+		// z.r = r
+		p.Files = make([]*File, 0, end.directoryRecords)
+
+		offset = int64(chuck - (p.Size - int64(end.directoryOffset)))
 	}
-	defer resp.Body.Close()
 
-	r := bytes.NewReader(body)
-
-	// parse zip's directory end
-	end, err := readDirectoryEnd(r, chuck)
-	if err != nil {
-		return errors.Wrap(err, "failed to read directory end from remote zip")
-	}
-
-	// z.r = r
-	p.Files = make([]*File, 0, end.directoryRecords)
 	// z.Comment = end.comment
 	rs := io.NewSectionReader(r, 0, chuck)
 
-	offset := int64(chuck - (p.Size - int64(end.directoryOffset)))
+	if offset < 0 {
+		return errors.Wrap(nil, "ivalid offset to begining of directory")
+	}
 	if _, err = rs.Seek(offset, io.SeekStart); err != nil {
 		return errors.Wrap(err, "failed to seek to begining of directory")
 	}
